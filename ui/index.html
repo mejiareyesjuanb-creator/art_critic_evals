@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Art Critic Evals</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f3ef;
+  --surface: #fcfcfb;
+  --surface-2: #f0efec;
+  --border: #e2e0da;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --muted: #76756f;
+  --accent: #2a78d6;
+  --accent-ink: #1c5cab;
+  --accent-soft: #cde2fb;
+  --good: #0ca30c;
+  --warning: #fab219;
+  --critical: #d03b3b;
+  --good-soft: #e3f4e3;
+  --critical-soft: #f9e3e3;
+  --warning-soft: #fdf1d6;
+  --ins: #d9ecd9;
+  --del: #f6dada;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211;
+    --surface: #1a1a19;
+    --surface-2: #232321;
+    --border: #2f2f2c;
+    --text: #f0efec;
+    --text-2: #c3c2b7;
+    --muted: #94938b;
+    --accent: #3987e5;
+    --accent-ink: #86b6ef;
+    --accent-soft: #184f95;
+    --good-soft: #15301a;
+    --critical-soft: #3a1c1c;
+    --warning-soft: #3a2f12;
+    --ins: #1d3a22;
+    --del: #45201f;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211;
+  --surface: #1a1a19;
+  --surface-2: #232321;
+  --border: #2f2f2c;
+  --text: #f0efec;
+  --text-2: #c3c2b7;
+  --muted: #94938b;
+  --accent: #3987e5;
+  --accent-ink: #86b6ef;
+  --accent-soft: #184f95;
+  --good-soft: #15301a;
+  --critical-soft: #3a1c1c;
+  --warning-soft: #3a2f12;
+  --ins: #1d3a22;
+  --del: #45201f;
+  --shadow: none;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+a { color: var(--accent-ink); }
+button, input, select, textarea { font: inherit; color: inherit; }
+header.top {
+  position: sticky; top: 0; z-index: 10; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.top-inner { max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.brand { font-weight: 650; font-size: 15px; margin-right: 8px; }
+.brand span { color: var(--muted); font-weight: 400; }
+nav { display: flex; gap: 4px; flex-wrap: wrap; }
+nav a {
+  text-decoration: none; color: var(--text-2); padding: 6px 12px; border-radius: 8px;
+}
+nav a.on { background: var(--surface-2); color: var(--text); font-weight: 600; }
+.job { margin-left: auto; display: flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; }
+.job .bar { width: 120px; height: 6px; border-radius: 3px; background: var(--accent-soft); overflow: hidden; }
+.job .bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; transition: width .3s; }
+main { max-width: 1200px; margin: 0 auto; padding: 20px 16px 80px; }
+h1 { font-size: 22px; margin: 0 0 4px; font-weight: 650; }
+h2 { font-size: 16px; margin: 0 0 12px; font-weight: 650; }
+h3 { font-size: 14px; margin: 0 0 8px; font-weight: 650; }
+.sub { color: var(--text-2); margin: 0 0 16px; }
+.muted { color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+.tile .label { color: var(--text-2); font-size: 13px; }
+.tile .value { font-size: 28px; font-weight: 650; line-height: 1.2; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+.tile .value.hero { font-size: 40px; }
+.tile .extra { color: var(--muted); font-size: 12.5px; }
+.delta-up { color: var(--text); }
+.delta-up::before { content: "▲ "; color: var(--good); }
+.delta-down::before { content: "▼ "; color: var(--critical); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 12px; color: var(--text-2); font-weight: 600; white-space: nowrap; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.click { cursor: pointer; }
+tr.click:hover td { background: var(--surface-2); }
+.btn {
+  border: 1px solid var(--border); background: var(--surface); padding: 6px 12px; border-radius: 8px;
+  cursor: pointer; white-space: nowrap;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.08); background: var(--accent); }
+.btn.danger { color: var(--critical); }
+.btn.small { padding: 3px 9px; font-size: 12.5px; }
+.btn.on { background: var(--accent-soft); border-color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+label.field { display: block; margin-bottom: 12px; }
+label.field > span { display: block; font-size: 12.5px; color: var(--text-2); margin-bottom: 4px; font-weight: 600; }
+input[type=text], input[type=number], input[type=url], select, textarea {
+  width: 100%; border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 7px 10px;
+}
+textarea { resize: vertical; min-height: 64px; }
+input:focus, select:focus, textarea:focus, .btn:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; font-size: 12px;
+  font-weight: 600; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); white-space: nowrap;
+}
+.badge .ic { font-size: 11px; }
+.badge.pass { background: var(--good-soft); border-color: transparent; }
+.badge.pass .ic { color: var(--good); }
+.badge.fail { background: var(--critical-soft); border-color: transparent; }
+.badge.fail .ic { color: var(--critical); }
+.badge.warn { background: var(--warning-soft); border-color: transparent; }
+.badge.warn .ic { color: var(--warning); }
+code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+.pre { white-space: pre-wrap; word-break: break-word; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; margin: 6px 0; max-height: 360px; overflow: auto; }
+.meter { height: 6px; border-radius: 3px; background: var(--accent-soft); overflow: hidden; width: 100%; min-width: 80px; margin-top: 4px; }
+.meter i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.dots { display: inline-flex; gap: 3px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.dot.pass { background: var(--good); }
+.dot.fail { background: var(--critical); }
+.dot.err { background: var(--warning); }
+details.case { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); margin-bottom: 8px; }
+details.case > summary {
+  list-style: none; cursor: pointer; padding: 10px 14px; display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto auto; gap: 10px; align-items: center;
+}
+details.case > summary::-webkit-details-marker { display: none; }
+details.case[open] > summary { border-bottom: 1px solid var(--border); }
+.case-body { padding: 12px 14px; }
+.run-block { border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 10px; }
+.notice { border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; display: flex; gap: 8px; align-items: flex-start; }
+.notice.warn { background: var(--warning-soft); }
+.notice.err { background: var(--critical-soft); }
+.notice.info { background: var(--surface-2); }
+.notice .ic { font-weight: 700; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.case-edit { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 10px; background: var(--surface); }
+.case-edit .head { display: grid; grid-template-columns: 50px minmax(0, 1fr) 120px auto; gap: 8px; align-items: end; margin-bottom: 8px; }
+.thumb { max-width: 140px; max-height: 100px; border-radius: 6px; border: 1px solid var(--border); display: block; }
+.chart-wrap { position: relative; }
+.chart-wrap svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tip {
+  position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: 12.5px; box-shadow: 0 4px 14px rgb(0 0 0 / .12); min-width: 170px; z-index: 5;
+}
+.diff ins { background: var(--ins); text-decoration: none; }
+.diff del { background: var(--del); }
+dialog { border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--text); padding: 0; width: min(860px, calc(100vw - 32px)); }
+dialog::backdrop { background: rgb(0 0 0 / .35); }
+.dlg-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; }
+.dlg-body { padding: 16px 18px; max-height: 70vh; overflow: auto; }
+.dlg-foot { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 14px; flex-wrap: wrap; }
+.seg button { border: 0; background: var(--surface); padding: 6px 12px; cursor: pointer; }
+.seg button.on { background: var(--accent-soft); font-weight: 600; }
+.toast { position: fixed; bottom: 16px; right: 16px; left: 16px; margin-left: auto; max-width: 420px; background: var(--text); color: var(--bg); padding: 10px 14px; border-radius: 10px; z-index: 50; box-shadow: 0 6px 20px rgb(0 0 0 / .2); }
+.toast a { color: inherit; font-weight: 600; }
+.empty { text-align: center; padding: 40px 16px; color: var(--text-2); }
+@media (max-width: 640px) {
+  .job { margin-left: 0; width: 100%; }
+  .case-edit .head { grid-template-columns: 1fr 1fr; }
+  details.case > summary { grid-template-columns: 28px minmax(0, 1fr) auto; }
+  details.case > summary .dots { display: none; }
+  .tile .value.hero { font-size: 34px; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">Art Critic Evals <span>· Van Gogh</span></div>
+    <nav id="nav">
+      <a href="#/runs" data-r="runs">Runs</a>
+      <a href="#/compare" data-r="compare">Compare</a>
+      <a href="#/edit" data-r="edit">Edit &amp; run</a>
+    </nav>
+    <div class="job" id="job"></div>
+  </div>
+</header>
+<main id="view"></main>
+
+<script>
+"use strict";
+// Pass-grade bands for the headline grade. Edit to taste.
+const GRADE_BANDS = [
+  { min: 0.9, label: "Strong", kind: "pass" },
+  { min: 0.7, label: "Good", kind: "pass" },
+  { min: 0.4, label: "Weak", kind: "warn" },
+  { min: 0, label: "Failing", kind: "fail" },
+];
+
+const S = { state: null, runs: [], details: {}, draft: null, polling: false, lastJob: null };
+
+// ---------- helpers ----------
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
+    else if (["value", "checked", "disabled", "selected", "open"].includes(k)) el[k] = v;
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat(Infinity)) {
+    if (kid == null || kid === false) continue;
+    el.append(kid instanceof Node ? kid : String(kid));
+  }
+  return el;
+}
+function svg(tag, attrs, ...kids) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [k, v] of Object.entries(attrs || {})) if (v != null) el.setAttribute(k, v);
+  for (const kid of kids.flat()) if (kid != null) el.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+  return el;
+}
+async function api(path, body) {
+  const opts = body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+  const res = await fetch(path, opts);
+  const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+const pct = (x) => (x == null ? "—" : `${Math.round(x * 100)}%`);
+const ciText = (ci) => `95% CI ${Math.round(ci[0] * 100)}–${Math.round(ci[1] * 100)}%`;
+function fmtDate(stamp) {
+  const m = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})/.exec(stamp || "");
+  if (!m) return stamp || "";
+  const d = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+  return d.toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+const money = (x) => (x == null ? "—" : x < 0.01 ? `$${x.toFixed(4)}` : `$${x.toFixed(2)}`);
+const grade = (rate) => GRADE_BANDS.find((b) => rate >= b.min);
+function badge(kind, text) {
+  const ic = { pass: "✓", fail: "✕", warn: "!", info: "•" }[kind] || "•";
+  return h("span", { class: `badge ${kind}` }, h("span", { class: "ic", "aria-hidden": "true" }, ic), text);
+}
+function verdictBadge(v) {
+  return v === "PASS" ? badge("pass", "PASS") : v === "ERROR" ? badge("warn", "ERROR") : badge("fail", "FAIL");
+}
+function dots(rows) {
+  return h("span", { class: "dots", "aria-hidden": "true" },
+    rows.map((r) => h("span", { class: `dot ${r.verdict === "PASS" ? "pass" : r.verdict === "ERROR" ? "err" : "fail"}`, title: `run ${r.run}: ${r.verdict}` })));
+}
+function notice(kind, text) {
+  return h("div", { class: `notice ${kind}`, role: kind === "err" ? "alert" : null },
+    h("span", { class: "ic", "aria-hidden": "true" }, kind === "err" ? "✕" : kind === "warn" ? "!" : "i"), h("div", null, text));
+}
+function toast(content, ms = 6000) {
+  const el = h("div", { class: "toast", role: "status" }, content);
+  document.body.append(el);
+  setTimeout(() => el.remove(), ms);
+}
+function tile(label, value, extra, hero) {
+  return h("div", { class: "tile" }, h("div", { class: "label" }, label),
+    h("div", { class: `value${hero ? " hero" : ""}` }, value), extra ? h("div", { class: "extra" }, extra) : null);
+}
+function wordDiff(a, b) {
+  const A = a.split(/(\s+)/), B = b.split(/(\s+)/);
+  if (A.length * B.length > 4e6) return null;
+  const n = A.length, m = B.length;
+  const dp = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const out = []; let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (A[i] === B[j]) { out.push(["=", A[i]]); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) out.push(["-", A[i++]]);
+    else out.push(["+", B[j++]]);
+  }
+  while (i < n) out.push(["-", A[i++]]);
+  while (j < m) out.push(["+", B[j++]]);
+  return out;
+}
+function diffView(a, b) {
+  if (a === b) return h("div", { class: "pre" }, a);
+  const parts = wordDiff(a, b);
+  if (!parts) return h("div", null, h("div", { class: "pre" }, a), h("div", { class: "pre" }, b));
+  return h("div", { class: "pre diff" }, parts.map(([op, t]) => op === "=" ? t : h(op === "+" ? "ins" : "del", null, t)));
+}
+async function getDetail(id) {
+  if (!S.details[id]) S.details[id] = await api(`/api/runs/${encodeURIComponent(id)}`);
+  return S.details[id];
+}
+function groupRows(rows) {
+  const by = {};
+  for (const r of rows) (by[r.id] ||= []).push(r);
+  for (const k in by) by[k].sort((a, b) => a.run - b.run);
+  return by;
+}
+
+// ---------- data ----------
+async function refresh() {
+  const [state, runs] = await Promise.all([api("/api/state"), api("/api/runs")]);
+  S.state = state; S.runs = runs;
+  if (!S.draft) resetDraft();
+  renderJob(state.job);
+  if (state.job.running) poll();
+}
+function resetDraft(keepRunSettings) {
+  const st = S.state;
+  const prev = S.draft;
+  S.draft = {
+    cases: structuredClone(st.tests), dirty: false,
+    prompt: keepRunSettings && prev ? prev.prompt : (st.latest_prompt || st.default_prompt),
+    label: keepRunSettings && prev ? prev.label : "run",
+    runs: keepRunSettings && prev ? prev.runs : 3,
+    note: keepRunSettings && prev ? prev.note : "",
+  };
+}
+window.addEventListener("beforeunload", (e) => { if (S.draft && S.draft.dirty) { e.preventDefault(); e.returnValue = ""; } });
+
+// ---------- job status ----------
+function renderJob(job) {
+  const box = document.getElementById("job");
+  box.replaceChildren();
+  if (job.running) {
+    const frac = job.total ? job.done / job.total : 0;
+    box.append(h("span", null, `Running “${job.label}”`),
+      h("span", { class: "bar", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": job.total || 1, "aria-valuenow": job.done },
+        h("i", { style: `width:${Math.max(4, frac * 100)}%` })),
+      h("span", { class: "mono" }, job.total ? `${job.done}/${job.total}` : "starting…"));
+  } else if (!S.state.api_key_set) {
+    box.append(badge("warn", "API key not set — runs disabled"));
+  }
+}
+async function poll() {
+  if (S.polling) return;
+  S.polling = true;
+  try {
+    while (true) {
+      const job = await api("/api/status");
+      renderJob(job);
+      if (!job.running) {
+        if (job.run_id) {
+          await refreshKeepDraft();
+          toast(h("span", null, "Run finished: ", h("a", { href: `#/run/${job.run_id}` }, job.run_id)), 10000);
+        } else if (job.error) {
+          toast(h("span", null, "Run failed: ", job.error), 15000);
+        }
+        route();
+        break;
+      }
+      await new Promise((r) => setTimeout(r, 1200));
+    }
+  } finally { S.polling = false; }
+}
+async function refreshKeepDraft() {
+  const draft = S.draft;
+  const [state, runs] = await Promise.all([api("/api/state"), api("/api/runs")]);
+  S.state = state; S.runs = runs; S.draft = draft;
+}
+
+// ---------- router ----------
+function route() {
+  const parts = (location.hash.replace(/^#\/?/, "") || "runs").split("/").map(decodeURIComponent);
+  for (const a of document.querySelectorAll("#nav a")) a.classList.toggle("on", a.dataset.r === (parts[0] === "run" ? "runs" : parts[0]));
+  const view = h("div");
+  document.getElementById("view").replaceChildren(view);
+  const fail = (e) => view.replaceChildren(notice("err", e.message));
+  if (parts[0] === "run" && parts[1]) renderRun(view, parts[1]).catch(fail);
+  else if (parts[0] === "compare") renderCompare(view, parts[1], parts[2]).catch(fail);
+  else if (parts[0] === "edit") renderEdit(view);
+  else renderRuns(view);
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+
+// ---------- runs list ----------
+function renderRuns(view) {
+  const runs = S.runs;
+  view.append(h("h1", null, "Runs"),
+    h("p", { class: "sub" }, "Every run is a frozen record: prompt, test set, rubric, grader and models. Select two to compare."));
+  if (!runs.length) {
+    view.append(h("div", { class: "card empty" }, "No runs yet. ", h("a", { href: "#/edit" }, "Set up and start one.")));
+    return;
+  }
+  const latest = runs[runs.length - 1], prev = runs[runs.length - 2];
+  const g = grade(latest.rate);
+  let delta = null;
+  if (prev) {
+    const d = Math.round((latest.rate - prev.rate) * 100);
+    delta = h("span", { class: d > 0 ? "delta-up" : d < 0 ? "delta-down" : "" }, `${d > 0 ? "+" : ""}${d} pts vs previous run`);
+  }
+  const best = runs.reduce((a, b) => (b.rate > a.rate ? b : a));
+  view.append(h("div", { class: "tiles" },
+    tile(h("span", null, "Latest pass grade · ", h("a", { href: `#/run/${latest.run_id}` }, latest.label)),
+      h("span", null, pct(latest.rate), " ", badge(g.kind, g.label)), h("span", null, `${latest.passed}/${latest.total} passed · `, delta || ciText(latest.ci)), true),
+    tile("Cases passing every run", `${latest.solid_cases}/${latest.case_count}`, "in the latest run"),
+    tile("Best pass grade", pct(best.rate), `${best.label} · ${fmtDate(best.timestamp)}`),
+    tile("Runs recorded", String(runs.length), `${new Set(runs.map((r) => r.tests_version)).size} test-set version(s)`)));
+
+  const chartCard = h("div", { class: "card" }, h("h2", null, "Pass rate across runs"),
+    h("p", { class: "muted", style: "margin:-6px 0 8px;font-size:12.5px" }, "Whiskers show the 95% interval: with few runs per case, small moves can be noise. Dashed lines mark a changed test set or grader."));
+  const chartBox = h("div", { class: "chart-wrap" });
+  chartCard.append(chartBox);
+  view.append(chartCard);
+  drawTrend(chartBox, runs);
+
+  const selected = new Set();
+  const compareBtn = h("button", { class: "btn primary", disabled: true, onclick: () => {
+    const [a, b] = [...selected].sort((x, y) => S.runs.findIndex((r) => r.run_id === x) - S.runs.findIndex((r) => r.run_id === y));
+    location.hash = `#/compare/${encodeURIComponent(a)}/${encodeURIComponent(b)}`;
+  } }, "Compare selected");
+  const body = h("tbody");
+  for (const r of [...runs].reverse()) {
+    const gb = grade(r.rate);
+    const cb = h("input", { type: "checkbox", "aria-label": `Select ${r.run_id}`, onclick: (e) => {
+      e.stopPropagation();
+      e.target.checked ? selected.add(r.run_id) : selected.delete(r.run_id);
+      if (selected.size > 2) { const first = [...selected][0]; selected.delete(first); body.querySelector(`input[data-id="${CSS.escape(first)}"]`).checked = false; }
+      compareBtn.disabled = selected.size !== 2;
+    } });
+    cb.dataset.id = r.run_id;
+    const splits = ["dev", "holdout"].filter((s) => r.splits[s]).map((s) => `${s} ${pct(r.splits[s].passed / r.splits[s].total)}`).join(" · ");
+    body.append(h("tr", { class: "click", onclick: () => (location.hash = `#/run/${r.run_id}`) },
+      h("td", { onclick: (e) => e.stopPropagation() }, cb),
+      h("td", null, h("div", { style: "font-weight:600" }, r.label), h("div", { class: "muted", style: "font-size:12.5px" }, fmtDate(r.timestamp))),
+      h("td", null, h("div", { class: "row" }, h("strong", { style: "font-size:16px" }, pct(r.rate)), badge(gb.kind, gb.label)),
+        h("div", { class: "meter" }, h("i", { style: `width:${r.rate * 100}%` })), h("div", { class: "muted", style: "font-size:12px" }, `${r.passed}/${r.total}${r.errors ? ` · ${r.errors} errors` : ""}`)),
+      h("td", { class: "num" }, `${r.solid_cases}/${r.case_count}`),
+      h("td", null, splits || "—"),
+      h("td", null, r.reviewed ? `${r.reviewed} reviewed · ${pct(r.agreement)} agree` : h("span", { class: "muted" }, "none")),
+      h("td", null, h("div", { class: "mono" }, `tests ${r.tests_version}`), h("div", { class: "mono muted" }, `grader ${r.grader_version}`)),
+      h("td", { class: "num" }, money(r.cost_usd)),
+      h("td", { style: "max-width:260px" }, r.note || h("span", { class: "muted" }, "—"))));
+  }
+  view.append(h("div", { class: "card" },
+    h("div", { class: "row", style: "margin-bottom:10px" }, h("h2", { style: "margin:0" }, "All runs"), h("span", { class: "spacer" }), compareBtn),
+    h("div", { class: "table-wrap" }, h("table", null,
+      h("thead", null, h("tr", null, h("th", null, ""), h("th", null, "Run"), h("th", null, "Pass grade"), h("th", { class: "num" }, "Cases solid"),
+        h("th", null, "Dev · holdout"), h("th", null, "Your review"), h("th", null, "Versions"), h("th", { class: "num" }, "Cost"), h("th", null, "Note"))),
+      body))));
+}
+
+function drawTrend(box, runs) {
+  const W = Math.max(320, box.clientWidth || 800), H = 240, m = { l: 44, r: 16, t: 12, b: 34 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const x = (i) => m.l + (runs.length === 1 ? iw / 2 : (i * iw) / (runs.length - 1));
+  const y = (v) => m.t + ih - v * ih;
+  const root = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `Pass rate across ${runs.length} runs; latest ${pct(runs[runs.length - 1].rate)}` });
+  const css = getComputedStyle(document.documentElement);
+  const c = (v) => css.getPropertyValue(v).trim();
+  for (const v of [0, 0.25, 0.5, 0.75, 1]) {
+    root.append(svg("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: c("--border"), "stroke-width": 1 }),
+      svg("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: c("--muted") }, `${v * 100}%`));
+  }
+  runs.forEach((r, i) => {
+    if (i > 0 && (r.tests_version !== runs[i - 1].tests_version || r.grader_version !== runs[i - 1].grader_version)) {
+      const xm = (x(i) + x(i - 1)) / 2;
+      root.append(svg("line", { x1: xm, x2: xm, y1: m.t, y2: m.t + ih, stroke: c("--muted"), "stroke-dasharray": "3 3", "stroke-width": 1 }));
+    }
+  });
+  const step = Math.max(1, Math.ceil(runs.length / Math.floor(iw / 90)));
+  runs.forEach((r, i) => {
+    if (i % step === 0 || i === runs.length - 1)
+      root.append(svg("text", { x: x(i), y: H - 12, "text-anchor": "middle", "font-size": 11, fill: c("--text-2") }, r.label.length > 14 ? r.label.slice(0, 13) + "…" : r.label));
+    root.append(svg("line", { x1: x(i), x2: x(i), y1: y(r.ci[0]), y2: y(r.ci[1]), stroke: c("--accent"), "stroke-opacity": 0.45, "stroke-width": 2, "stroke-linecap": "round" }));
+  });
+  if (runs.length > 1)
+    root.append(svg("polyline", { points: runs.map((r, i) => `${x(i)},${y(r.rate)}`).join(" "), fill: "none", stroke: c("--accent"), "stroke-width": 2, "stroke-linejoin": "round" }));
+  const cross = svg("line", { y1: m.t, y2: m.t + ih, stroke: c("--muted"), "stroke-width": 1, visibility: "hidden" });
+  root.append(cross);
+  runs.forEach((r, i) => root.append(svg("circle", { cx: x(i), cy: y(r.rate), r: 5, fill: c("--accent"), stroke: c("--surface"), "stroke-width": 2 })));
+  const tip = h("div", { class: "tip", hidden: true });
+  const slot = runs.length === 1 ? iw : iw / (runs.length - 1);
+  runs.forEach((r, i) => {
+    const hit = svg("rect", { x: x(i) - slot / 2, y: m.t, width: slot, height: ih, fill: "transparent", style: "cursor:pointer" });
+    hit.addEventListener("mouseenter", () => {
+      cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+      tip.replaceChildren(h("div", { style: "font-weight:600" }, r.label), h("div", { class: "muted" }, fmtDate(r.timestamp)),
+        h("div", { style: "margin-top:4px" }, `Pass rate ${pct(r.rate)} (${r.passed}/${r.total})`), h("div", { class: "muted" }, ciText(r.ci)),
+        h("div", { class: "mono muted" }, `tests ${r.tests_version}`));
+      tip.hidden = false;
+      const px = (x(i) / W) * box.clientWidth;
+      tip.style.left = `${Math.min(Math.max(0, px - 90), box.clientWidth - 190)}px`;
+      tip.style.top = `${(y(r.rate) / H) * box.clientHeight + 14}px`;
+    });
+    hit.addEventListener("mouseleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); });
+    hit.addEventListener("click", () => (location.hash = `#/run/${r.run_id}`));
+    root.append(hit);
+  });
+  box.replaceChildren(root, tip);
+}
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { const box = document.querySelector(".chart-wrap"); if (box && S.runs.length) drawTrend(box, S.runs); }, 150);
+});
+
+// ---------- run detail ----------
+async function renderRun(view, id) {
+  const d = await getDetail(id);
+  const s = d.summary, man = d.manifest;
+  const by = groupRows(d.rows);
+  const g = grade(s.rate);
+  view.append(h("p", { style: "margin:0 0 8px" }, h("a", { href: "#/runs" }, "← All runs")),
+    h("h1", null, `${s.label}`, h("span", { class: "muted", style: "font-weight:400" }, ` · ${fmtDate(s.timestamp)}`)),
+    h("p", { class: "sub" }, `Critic ${s.critic_model} · grader ${s.grader_model} · ${s.runs} run(s) per case · `,
+      h("span", { class: "mono" }, `tests ${s.tests_version} · grader ${s.grader_version}`), s.duration_s ? ` · ${Math.round(s.duration_s)}s` : ""));
+
+  const tiles = h("div", { class: "tiles" });
+  const drawTiles = () => {
+    const s = d.summary;
+    const splitText = ["dev", "holdout"].filter((k) => s.splits[k]).map((k) => `${k} ${pct(s.splits[k].passed / s.splits[k].total)} (${s.splits[k].passed}/${s.splits[k].total})`).join(" · ");
+    tiles.replaceChildren(
+      tile("Pass grade", h("span", null, pct(s.rate), " ", badge(g.kind, g.label)), `${s.passed}/${s.total} passed · ${ciText(s.ci)}${s.errors ? ` · ${s.errors} errors` : ""}`, true),
+      tile("Cases passing every run", `${s.solid_cases}/${s.case_count}`, splitText || null),
+      tile("Your review of the grader", s.reviewed ? `${pct(s.agreement)} agree` : "—",
+        s.reviewed ? `on ${s.reviewed} reviewed · with your verdicts the pass rate is ${pct(s.human_adjusted_rate)}` : "Mark grader verdicts below to measure how far you can trust it"),
+      tile("Cost", money(s.cost_usd), s.tokens ? `${(s.tokens.critic_input || 0) + (s.tokens.grader_input || 0)} in · ${(s.tokens.critic_output || 0) + (s.tokens.grader_output || 0)} out tokens` : "Not recorded for this run"));
+  };
+  d.onReview = drawTiles;
+  drawTiles();
+  view.append(tiles);
+
+  const noteBox = h("textarea", { rows: 2, value: man.note || "", placeholder: "What changed in this run, and why?" });
+  const noteSave = h("button", { class: "btn small", onclick: async () => {
+    try { await api("/api/note", { run_id: id, note: noteBox.value }); d.manifest.note = noteBox.value; S.runs = await api("/api/runs"); toast("Note saved", 2500); } catch (e) { toast(e.message); }
+  } }, "Save note");
+  view.append(h("div", { class: "grid2" },
+    h("div", { class: "card" }, h("h3", null, "Note"), noteBox, h("div", { class: "row", style: "margin-top:8px" }, noteSave)),
+    h("div", { class: "card" }, h("h3", null, "System prompt"), h("div", { class: "pre" }, man.system_prompt))));
+
+  let filter = "all";
+  const list = h("div");
+  const seg = h("div", { class: "seg", role: "group", "aria-label": "Filter cases" });
+  const filters = [["all", "All cases"], ["fail", "With failures"], ["unreviewed", "Not reviewed"]];
+  const drawList = () => {
+    seg.replaceChildren(...filters.map(([k, t]) => h("button", { class: filter === k ? "on" : "", "aria-pressed": String(filter === k), onclick: () => { filter = k; drawList(); } }, t)));
+    list.replaceChildren();
+    const ids = Object.keys(by).sort((a, b) => +a - +b);
+    for (const cid of ids) {
+      const rows = by[cid];
+      if (filter === "fail" && rows.every((r) => r.verdict === "PASS")) continue;
+      if (filter === "unreviewed" && rows.every((r) => d.reviews[`${r.id}-${r.run}`]?.human)) continue;
+      list.append(caseDetails(d, id, d.cases[cid] || rows[0], rows));
+    }
+    for (const sid of man.skipped || []) {
+      const c = d.cases[String(sid)];
+      if (c && filter === "all") list.append(h("div", { class: "case-edit muted" }, `#${sid} ${c.name} — skipped (needs an image)`));
+    }
+    if (!list.children.length) list.append(h("div", { class: "empty" }, "Nothing matches this filter."));
+  };
+  drawList();
+  view.append(h("h2", { style: "margin-top:8px" }, "Cases"), seg, list);
+}
+
+function caseDetails(d, runId, c, rows) {
+  const k = rows.filter((r) => r.verdict === "PASS").length;
+  const det = h("details", { class: "case" },
+    h("summary", null, h("span", { class: "mono muted" }, `#${c.id}`),
+      h("span", null, h("strong", null, c.name), c.split === "holdout" ? h("span", null, " ", badge("info", "holdout")) : null),
+      dots(rows), h("span", { class: `badge ${k === rows.length ? "pass" : k === 0 ? "fail" : "warn"}` }, `${k}/${rows.length}`)));
+  const body = h("div", { class: "case-body" },
+    h("div", { class: "grid2" },
+      h("div", null, h("h3", null, "Input"), h("div", { class: "pre" }, c.input),
+        c.image ? h("img", { class: "thumb", src: `/${c.image}`, alt: `Image for case ${c.id}` }) : null),
+      h("div", null, h("h3", null, "Must contain"), h("div", { class: "pre" }, c.must_contain))));
+  for (const r of rows) body.append(runBlock(d, runId, r));
+  det.append(body);
+  return det;
+}
+
+function runBlock(d, runId, r) {
+  const key = `${r.id}-${r.run}`;
+  const block = h("div", { class: "run-block" });
+  const draw = () => {
+    const rev = d.reviews[key] || {};
+    const human = rev.human || null;
+    const set = async (val) => {
+      try {
+        d.reviews = await api("/api/review", { run_id: runId, case_id: r.id, run: r.run, human: val, note: note.value });
+        const [fresh, runs] = await Promise.all([api(`/api/runs/${encodeURIComponent(runId)}`), api("/api/runs")]);
+        d.summary = fresh.summary; S.runs = runs;
+        draw(); d.onReview && d.onReview();
+      } catch (e) { toast(e.message); }
+    };
+    const note = h("input", { type: "text", value: rev.note || "", placeholder: "Why? (optional)", style: "max-width:320px" });
+    note.addEventListener("change", () => set(human));
+    const status = human ? (human === r.verdict ? badge("pass", "you agree with the grader") : badge("warn", `you override: ${human}`)) : h("span", { class: "muted" }, "not reviewed");
+    block.replaceChildren(
+      h("div", { class: "row" }, h("strong", null, `Run ${r.run}`), verdictBadge(r.verdict), h("span", { class: "spacer" }),
+        h("span", { class: "muted", style: "font-size:12.5px" }, "Your verdict:"),
+        h("button", { class: `btn small${human === "PASS" ? " on" : ""}`, "aria-pressed": String(human === "PASS"), onclick: () => set("PASS") }, "Pass"),
+        h("button", { class: `btn small${human === "FAIL" ? " on" : ""}`, "aria-pressed": String(human === "FAIL"), onclick: () => set("FAIL") }, "Fail"),
+        human ? h("button", { class: "btn small", onclick: () => { note.value = ""; set(null); } }, "Clear") : null),
+      h("div", { style: "margin:6px 0", class: "row" }, h("span", { class: "muted" }, "Grader:"), h("span", null, r.reason)),
+      h("div", { class: "row", style: "margin-bottom:4px" }, status, note),
+      h("details", null, h("summary", { style: "cursor:pointer;color:var(--accent-ink)" }, `Critic output (${r.output.length} chars)`), h("div", { class: "pre" }, r.output || "(empty)")));
+  };
+  draw();
+  return block;
+}
+
+// ---------- compare ----------
+async function renderCompare(view, a, b) {
+  const runs = S.runs;
+  view.append(h("h1", null, "Compare runs"), h("p", { class: "sub" }, "A is the reference, B the candidate. Change one thing at a time so a difference can be credited to it."));
+  if (runs.length < 2) { view.append(h("div", { class: "card empty" }, "You need at least two runs to compare.")); return; }
+  a = a || runs[runs.length - 2].run_id; b = b || runs[runs.length - 1].run_id;
+  const pick = (val, which) => h("select", { "aria-label": `Run ${which}`, onchange: (e) => {
+    location.hash = which === "A" ? `#/compare/${encodeURIComponent(e.target.value)}/${encodeURIComponent(b)}` : `#/compare/${encodeURIComponent(a)}/${encodeURIComponent(e.target.value)}`;
+  } }, [...runs].reverse().map((r) => h("option", { value: r.run_id, selected: r.run_id === val }, `${r.label} · ${fmtDate(r.timestamp)} · ${pct(r.rate)}`)));
+  view.append(h("div", { class: "card grid2" },
+    h("label", { class: "field", style: "margin:0" }, h("span", null, "A · reference"), pick(a, "A")),
+    h("label", { class: "field", style: "margin:0" }, h("span", null, "B · candidate"), pick(b, "B"))));
+  const [A, B] = await Promise.all([getDetail(a), getDetail(b)]);
+  const sa = A.summary, sb = B.summary;
+
+  const warns = [];
+  if (sa.tests_version !== sb.tests_version) warns.push("The test set changed between these runs. Cases marked “edited” or present in only one run aren't comparable; the overall rates measure different things.");
+  if (sa.grader_version !== sb.grader_version) warns.push("The grader (rubric, instructions or model) changed between these runs, so scores aren't measured the same way.");
+  if (sa.critic_model !== sb.critic_model) warns.push(`The critic model changed (${sa.critic_model} → ${sb.critic_model}).`);
+  if (A.manifest.system_prompt !== B.manifest.system_prompt && warns.length) warns.push("The system prompt changed too, so any difference can't be credited to one change.");
+  for (const w of warns) view.append(notice("warn", w));
+
+  const dpts = Math.round((sb.rate - sa.rate) * 100);
+  const overlap = sa.ci[0] <= sb.ci[1] && sb.ci[0] <= sa.ci[1];
+  view.append(h("div", { class: "tiles" },
+    tile(`A · ${sa.label}`, pct(sa.rate), `${sa.passed}/${sa.total} · ${ciText(sa.ci)}`),
+    tile(`B · ${sb.label}`, pct(sb.rate), `${sb.passed}/${sb.total} · ${ciText(sb.ci)}`),
+    tile("Change", h("span", { class: dpts > 0 ? "delta-up" : dpts < 0 ? "delta-down" : "" }, `${dpts > 0 ? "+" : ""}${dpts} pts`),
+      overlap ? "The intervals overlap: this could be noise. Add runs to be sure." : "The intervals don't overlap: likely a real change.")));
+
+  view.append(h("div", { class: "card" }, h("h2", null, "System prompt"),
+    A.manifest.system_prompt === B.manifest.system_prompt ? h("p", { class: "muted", style: "margin:0 0 6px" }, "Identical in both runs.") : h("p", { class: "muted", style: "margin:0 0 6px" }, "Word diff, A → B."),
+    diffView(A.manifest.system_prompt, B.manifest.system_prompt)));
+
+  const ga = groupRows(A.rows), gb = groupRows(B.rows);
+  const ids = [...new Set([...Object.keys(ga), ...Object.keys(gb)])].sort((x, y) => +x - +y);
+  const items = ids.map((cid) => {
+    const ra = ga[cid], rb = gb[cid];
+    const ca = A.cases[cid], cb = B.cases[cid];
+    const fa = ra ? ra.filter((r) => r.verdict === "PASS").length / ra.length : null;
+    const fb = rb ? rb.filter((r) => r.verdict === "PASS").length / rb.length : null;
+    let status, order;
+    if (!ra) { status = badge("info", "only in B"); order = 4; }
+    else if (!rb) { status = badge("info", "only in A"); order = 4; }
+    else if (ca && cb && ca.hash !== cb.hash) { status = badge("warn", "case edited"); order = 3; }
+    else if (fb < fa) { status = badge("fail", "regressed"); order = 0; }
+    else if (fb > fa) { status = badge("pass", "improved"); order = 1; }
+    else { status = h("span", { class: "muted" }, "same"); order = 2; }
+    return { cid, ra, rb, c: cb || ca || (ra || rb)[0], fa, fb, status, order };
+  }).sort((x, y) => x.order - y.order || +x.cid - +y.cid);
+
+  const list = h("div");
+  for (const it of items) {
+    const kp = (rows) => (rows ? `${rows.filter((r) => r.verdict === "PASS").length}/${rows.length}` : "—");
+    const det = h("details", { class: "case" },
+      h("summary", { style: "grid-template-columns: 34px minmax(0,1fr) auto auto" }, h("span", { class: "mono muted" }, `#${it.cid}`),
+        h("strong", null, it.c.name), h("span", { class: "mono" }, `${kp(it.ra)} → ${kp(it.rb)}`), it.status));
+    const col = (label, rows) => h("div", null, h("h3", null, label),
+      rows ? rows.map((r) => h("div", { class: "run-block" }, h("div", { class: "row" }, h("strong", null, `Run ${r.run}`), verdictBadge(r.verdict)),
+        h("div", { class: "muted", style: "margin:4px 0" }, r.reason), h("div", { class: "pre" }, r.output || "(empty)"))) : h("p", { class: "muted" }, "Not in this run."));
+    det.append(h("div", { class: "case-body" }, h("div", { class: "grid2" }, col("A", it.ra), col("B", it.rb))));
+    list.append(det);
+  }
+  view.append(h("h2", null, "Cases"), h("p", { class: "muted", style: "margin:-6px 0 10px" }, "Regressions first. Open a case to read both runs' outputs side by side."), list);
+}
+
+// ---------- edit & run ----------
+function renderEdit(view) {
+  const st = S.state, dr = S.draft;
+  view.append(h("h1", null, "Edit & run"),
+    h("p", { class: "sub" }, "Change the system prompt to test it. Edit test cases sparingly: each saved change makes a new test-set version, and runs on different versions aren't directly comparable."));
+  const left = h("div", { class: "card" });
+  const right = h("div", { class: "card" });
+  view.append(left, right);
+  drawRunSettings(left);
+  drawCases(right);
+}
+
+function activeCount(cases) { return cases.filter((c) => c.image || !c.needs_image).length; }
+
+function drawRunSettings(box) {
+  const st = S.state, dr = S.draft;
+  box.replaceChildren();
+  const promptBox = h("textarea", { rows: 7, value: dr.prompt, oninput: (e) => { dr.prompt = e.target.value; updateEstimate(); promptState(); } });
+  const promptStatus = h("span", { class: "muted", style: "font-size:12.5px" });
+  const promptState = () => {
+    promptStatus.textContent = st.latest_prompt == null ? "" : dr.prompt.trim() === st.latest_prompt.trim() ? "Same as the latest run" : "Edited — differs from the latest run";
+  };
+  promptState();
+  const runsInput = h("input", { type: "number", min: 1, max: 10, value: dr.runs, oninput: (e) => { dr.runs = parseInt(e.target.value, 10) || 0; updateEstimate(); } });
+  const labelInput = h("input", { type: "text", value: dr.label, maxlength: 40, oninput: (e) => { dr.label = e.target.value; updateEstimate(); } });
+  const noteInput = h("textarea", { rows: 2, value: dr.note, placeholder: "What did you change, and why? (saved with the run)", oninput: (e) => { dr.note = e.target.value; } });
+  const estimate = h("div", { class: "muted", style: "margin:4px 0 12px" });
+  const blockers = h("div");
+  const runBtn = h("button", { class: "btn primary", onclick: startRun }, "Run eval");
+  function updateEstimate() {
+    const saved = activeCount(st.tests), n = dr.runs;
+    const cost = st.cost_per_case_run != null && n ? money(st.cost_per_case_run * saved * n) : null;
+    estimate.replaceChildren(`${saved} active case(s) × ${n || 0} run(s) = ${saved * (n || 0)} critic calls + up to ${saved * (n || 0)} grader calls`,
+      cost ? ` · est. ${cost}` : " · cost estimate appears after the first run with token tracking");
+    const reasons = [];
+    if (!st.api_key_set) reasons.push("Set ANTHROPIC_API_KEY in the server's environment and restart it.");
+    if (dr.dirty) reasons.push("Save or discard your test-case changes first: every run records exactly the saved test set.");
+    if (!dr.prompt.trim()) reasons.push("The system prompt is empty.");
+    if (!(n >= 1 && n <= 10)) reasons.push("Runs must be between 1 and 10.");
+    if (!saved) reasons.push("No active test cases.");
+    if (S.state.job.running) reasons.push("A run is already in progress.");
+    blockers.replaceChildren(...reasons.map((r) => notice("info", r)));
+    runBtn.disabled = reasons.length > 0;
+  }
+  async function startRun() {
+    runBtn.disabled = true;
+    try {
+      const job = await api("/api/run", { prompt: dr.prompt, runs: dr.runs, label: dr.label.trim() || "run", note: dr.note });
+      S.state.job = job; renderJob(job); toast("Run started. You can keep browsing; progress shows at the top.", 4000);
+      poll();
+      updateEstimate();
+    } catch (e) { toast(e.message); updateEstimate(); }
+  }
+  box.append(h("h2", null, "Run settings"),
+    h("div", { class: "grid2" },
+      h("label", { class: "field" }, h("span", null, "Label"), labelInput),
+      h("label", { class: "field" }, h("span", null, "Runs per case (1–10)"), runsInput)),
+    h("label", { class: "field" }, h("span", null, "System prompt"), promptBox),
+    h("div", { class: "row", style: "margin:-4px 0 12px" }, promptStatus, h("span", { class: "spacer" }),
+      st.latest_prompt != null ? h("button", { class: "btn small", onclick: () => { dr.prompt = st.latest_prompt; drawRunSettings(box); } }, "Use latest run's prompt") : null,
+      h("button", { class: "btn small", onclick: () => { dr.prompt = st.default_prompt; drawRunSettings(box); } }, "Reset to eval.py default")),
+    h("label", { class: "field" }, h("span", null, "Note"), noteInput),
+    estimate, blockers, h("div", { class: "row" }, runBtn));
+  updateEstimate();
+  box._update = updateEstimate;
+}
+
+function drawCases(box) {
+  const st = S.state, dr = S.draft;
+  box.replaceChildren();
+  const settings = document.querySelector("#view .card");
+  const head = h("div");
+  const markDirty = () => { dr.dirty = true; refreshHead(); settings && settings._update && settings._update(); };
+  const save = h("button", { class: "btn primary", onclick: async () => {
+    try {
+      const res = await api("/api/tests", { cases: dr.cases });
+      st.tests = res.tests; st.tests_version = res.tests_version; dr.cases = structuredClone(res.tests); dr.dirty = false;
+      toast(`Saved. Test set version ${res.tests_version}.`, 3000);
+      route();
+    } catch (e) { toast(e.message, 8000); }
+  } }, "Save test set");
+  const discard = h("button", { class: "btn", onclick: () => { if (confirm("Discard your unsaved test-case changes?")) { resetDraft(true); route(); } } }, "Discard changes");
+  const add = h("button", { class: "btn", onclick: () => {
+    dr.cases.push({ id: nextId(), name: "", input: "", image: null, must_contain: "" });
+    markDirty(); drawCases(box);
+    const eds = box.querySelectorAll(".case-edit input[type=text]");
+    eds[eds.length - 1]?.focus();
+  } }, "Add case");
+  const imp = h("button", { class: "btn", onclick: () => openImport(() => { dr.dirty = true; route(); }) }, "Import cases…");
+  function refreshHead() {
+    save.disabled = discard.disabled = !dr.dirty;
+    head.replaceChildren(h("div", { class: "row", style: "margin-bottom:8px" }, h("h2", { style: "margin:0" }, "Test cases"), h("span", { class: "spacer" }), add, imp, discard, save),
+      dr.dirty
+        ? notice("warn", "Unsaved changes. Saving creates a new test-set version; earlier runs keep the version they used.")
+        : h("p", { class: "muted", style: "margin:0 0 10px" }, "Saved · test set ", h("span", { class: "mono" }, st.tests_version), ` · ${dr.cases.length} case(s), ${activeCount(dr.cases)} active`));
+  }
+  refreshHead();
+  box.append(head);
+  dr.cases.forEach((c, idx) => box.append(caseEditor(c, idx, markDirty, box)));
+}
+function nextId() { return Math.max(0, ...S.draft.cases.map((c) => c.id)) + 1; }
+
+function caseEditor(c, idx, markDirty, box) {
+  const dr = S.draft;
+  const upd = (field) => (e) => {
+    c[field] = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    if (field === "needs_image" && !c.needs_image) delete c.needs_image;
+    if (field === "split" && c.split === "dev") delete c.split;
+    markDirty();
+    if (field === "needs_image") drawCases(box);
+  };
+  const fileInput = h("input", { type: "file", accept: "image/png,image/jpeg,image/gif,image/webp", style: "display:none", onchange: async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast("Images must be 5 MB or smaller."); return; }
+    const dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
+    try { const { path } = await api("/api/image", { data_url: dataUrl }); c.image = path; markDirty(); drawCases(box); } catch (err) { toast(err.message); }
+  } });
+  const skipped = c.needs_image && !c.image;
+  return h("div", { class: "case-edit" },
+    h("div", { class: "head" },
+      h("label", { class: "field", style: "margin:0" }, h("span", null, "ID"), h("div", { class: "mono", style: "padding:7px 0" }, `#${c.id}`)),
+      h("label", { class: "field", style: "margin:0" }, h("span", null, "Name"), h("input", { type: "text", value: c.name, oninput: upd("name") })),
+      h("label", { class: "field", style: "margin:0" }, h("span", null, "Split"),
+        h("select", { onchange: upd("split") }, h("option", { value: "dev", selected: (c.split || "dev") === "dev" }, "dev"), h("option", { value: "holdout", selected: c.split === "holdout" }, "holdout"))),
+      h("button", { class: "btn small danger", "aria-label": `Delete case ${c.id}`, onclick: () => { if (confirm(`Delete case #${c.id}?`)) { dr.cases.splice(idx, 1); markDirty(); drawCases(box); } } }, "Delete")),
+    h("div", { class: "grid2" },
+      h("label", { class: "field" }, h("span", null, "Input"), h("textarea", { rows: 3, value: c.input, oninput: upd("input") })),
+      h("label", { class: "field" }, h("span", null, "Must contain (what the grader checks)"), h("textarea", { rows: 3, value: c.must_contain, oninput: upd("must_contain") }))),
+    h("div", { class: "row" },
+      c.image ? h("img", { class: "thumb", src: `/${c.image}`, alt: `Image for case ${c.id}` }) : null,
+      c.image ? h("span", { class: "mono muted" }, c.image) : null,
+      fileInput,
+      h("button", { class: "btn small", onclick: () => fileInput.click() }, c.image ? "Replace image" : "Add image"),
+      c.image ? h("button", { class: "btn small", onclick: () => { c.image = null; markDirty(); drawCases(box); } }, "Remove image") : null,
+      h("label", { class: "row", style: "gap:6px" }, h("input", { type: "checkbox", checked: !!c.needs_image, onchange: upd("needs_image") }), "Needs an image (skip until added)"),
+      h("span", { class: "spacer" }),
+      skipped ? badge("warn", "skipped until an image is added") : null,
+      c.source ? h("span", { class: "muted", style: "font-size:12px" }, `from ${c.source}`) : null));
+}
+
+// ---------- import ----------
+function openImport(onAdded) {
+  let kind = "file", preview = null;
+  const dlg = h("dialog", { "aria-label": "Import test cases" });
+  const body = h("div", { class: "dlg-body" });
+  const addBtn = h("button", { class: "btn primary", disabled: true }, "Add cases");
+  const close = () => { dlg.close(); dlg.remove(); };
+  const template = () => {
+    const csv = 'name,input,must_contain,image,split\n"Classic, in-period","Critique Millet\'s The Gleaners (1857).","Reverent tone; rates all four parameters; verdict in his idiom.",,dev\n';
+    const a = h("a", { href: URL.createObjectURL(new Blob([csv], { type: "text/csv" })), download: "test-cases-template.csv" }, "Download a CSV template");
+    return a;
+  };
+  const help = {
+    file: h("div", null, h("p", null, "A ", h("strong", null, "JSON"), " file with a list of cases, or a ", h("strong", null, "CSV"), " with a header row. Columns: ",
+      h("code", null, "name"), ", ", h("code", null, "input"), ", ", h("code", null, "must_contain"), " (required), and optional ", h("code", null, "image"), " (a URL or a path in this folder), ",
+      h("code", null, "split"), " (dev or holdout), ", h("code", null, "needs_image"), ". IDs are assigned on import."), template()),
+    gsheet: h("p", null, "Paste the Sheet's link. The first row must be a header with the same columns as the CSV. Share it as ", h("strong", null, "Anyone with the link can view"),
+      "; for a private Sheet, use File → Download → CSV and upload that file instead. The tab in your link (gid) is the one imported."),
+    gdoc: h("div", null, h("p", null, "Paste the Doc's link (shared as ", h("strong", null, "Anyone with the link can view"), "). The Doc can hold a JSON list, or cases separated by a line with ", h("code", null, "---"), ":"),
+      h("div", { class: "pre mono" }, "Name: Classic, in-period\nInput: Critique Millet's The Gleaners (1857).\nMust: Reverent tone; rates all four parameters.\nSplit: dev\n---\nName: Rival\nInput: What do you think of Gauguin's Vision After the Sermon?\nMust: Personal, slightly wounded voice."),
+      h("p", { class: "muted" }, "Text before the first field is ignored, so the Doc can start with a title or notes. Tables aren't read; use a Sheet for tabular data.")),
+  };
+  const draw = () => {
+    const segBtns = [["file", "JSON or CSV file"], ["gsheet", "Google Sheet"], ["gdoc", "Google Doc"]].map(([k, t]) =>
+      h("button", { class: kind === k ? "on" : "", "aria-pressed": String(kind === k), onclick: () => { kind = k; preview = null; draw(); } }, t));
+    const input = kind === "file"
+      ? h("input", { type: "file", accept: ".json,.csv,application/json,text/csv" })
+      : h("input", { type: "url", placeholder: kind === "gsheet" ? "https://docs.google.com/spreadsheets/d/…" : "https://docs.google.com/document/d/…" });
+    const go = h("button", { class: "btn", onclick: async () => {
+      go.disabled = true; go.textContent = "Reading…";
+      try {
+        let req;
+        if (kind === "file") {
+          const f = input.files[0]; if (!f) throw new Error("Choose a file first.");
+          const text = await f.text();
+          req = { kind: /\.json$/i.test(f.name) || f.type === "application/json" ? "json" : "csv", content: text, filename: f.name };
+        } else {
+          if (!input.value.trim()) throw new Error("Paste a link first.");
+          req = { kind, url: input.value.trim() };
+        }
+        preview = await api("/api/import", req);
+      } catch (e) { preview = { error: e.message }; }
+      draw();
+    } }, "Preview");
+    const out = h("div", { style: "margin-top:14px" });
+    if (preview && preview.error) out.append(notice("err", preview.error));
+    else if (preview) {
+      out.append(h("p", null, h("strong", null, `${preview.cases.length} case(s) ready`), preview.errors.length ? `, ${preview.errors.length} row(s) with errors (not imported)` : ""));
+      for (const e of preview.errors) out.append(notice("err", e));
+      for (const w of preview.warnings) out.append(notice("warn", w));
+      if (preview.cases.length) out.append(h("div", { class: "table-wrap" }, h("table", null,
+        h("thead", null, h("tr", null, h("th", null, "Name"), h("th", null, "Input"), h("th", null, "Must contain"), h("th", null, "Split"), h("th", null, "Image"))),
+        h("tbody", null, preview.cases.map((c) => h("tr", null, h("td", null, c.name), h("td", null, c.input.slice(0, 120)), h("td", null, c.must_contain.slice(0, 120)),
+          h("td", null, c.split || "dev"), h("td", null, c.image ? h("img", { class: "thumb", src: `/${c.image}`, alt: "" }) : "—")))))));
+      out.append(h("p", { class: "muted" }, "Imported cases are copied into your test set. Later edits to the source don't change it; re-import to pull them in."));
+    }
+    addBtn.disabled = !(preview && preview.cases && preview.cases.length);
+    addBtn.textContent = preview && preview.cases ? `Add ${preview.cases.length} case(s)` : "Add cases";
+    body.replaceChildren(h("div", { class: "seg", role: "group", "aria-label": "Import source" }, segBtns), help[kind],
+      h("div", { class: "row", style: "flex-wrap:nowrap" }, input, go), out);
+  };
+  addBtn.addEventListener("click", () => {
+    for (const c of preview.cases) S.draft.cases.push({ ...c, id: nextId() });
+    close(); toast(`Added ${preview.cases.length} case(s). Review them, then save the test set.`, 5000); onAdded();
+  });
+  dlg.append(h("div", { class: "dlg-head" }, h("h2", { style: "margin:0" }, "Import test cases"), h("span", { class: "spacer" }), h("button", { class: "btn small", onclick: close }, "Close")),
+    body, h("div", { class: "dlg-foot" }, h("button", { class: "btn", onclick: close }, "Cancel"), addBtn));
+  dlg.addEventListener("close", () => dlg.remove());
+  document.body.append(dlg);
+  draw();
+  dlg.showModal();
+}
+
+// ---------- boot ----------
+refresh().then(route).catch((e) => document.getElementById("view").replaceChildren(notice("err", `Couldn't reach the server: ${e.message}`)));
+</script>
+</body>
+</html>
