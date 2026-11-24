@@ -1,0 +1,566 @@
+<meta name="dash-one-writer">
+<style>
+.vg { display: grid; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+.vg-head { display: grid; gap: var(--cds-gap-sm); }
+.vg-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.vg-lede { margin: 0; color: var(--color-fg-muted); max-width: 68ch; }
+.vg-take { margin: 0; font-size: var(--cds-font-size-heading); max-width: 68ch; }
+.vg-take b { font-weight: var(--cds-font-weight-medium); }
+.vg-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--cds-gap-md); }
+.vg-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+.vg-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0 0 var(--cds-gap-xs); }
+.vg-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2.5rem; line-height: 1.1; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: var(--cds-gap-sm); flex-wrap: wrap; min-height: 2.75rem; }
+.vg-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 0; font-variant-numeric: tabular-nums; }
+.vg-chip { font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 1px 8px; display: inline-flex; gap: 4px; align-items: center; white-space: nowrap; line-height: 1.6; }
+.vg-chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--color-fg-muted); }
+.vg-chip.ok::before { background: var(--color-ok); }
+.vg-chip.warn::before { background: var(--color-warn); }
+.vg-chip.bad::before { background: var(--color-bad); }
+.vg-up::before { content: "▲ "; color: var(--color-ok); }
+.vg-down::before { content: "▼ "; color: var(--color-bad); }
+.vg-sec { display: grid; gap: var(--cds-gap-md); min-width: 0; }
+.vg-sec h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.vg-note { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); max-width: 75ch; }
+.vg-chart { position: relative; min-height: 260px; }
+.vg-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.vg-chart .tick-label { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); }
+.vg-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md); font-size: var(--cds-font-size-caption); min-width: 180px; z-index: 2; }
+.vg-tip .muted { color: var(--cds-text-secondary); }
+.vg-scroll { overflow-x: auto; }
+.vg-table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.vg-table th, .vg-table td { text-align: left; padding: var(--cds-pad-sm) var(--cds-pad-md); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.vg-table th { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); white-space: nowrap; }
+.vg-table td.num, .vg-table th.num { text-align: right; white-space: nowrap; }
+.vg-table td.wrap { min-width: 220px; max-width: 420px; }
+.vg-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85em; }
+.vg-pickers { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--cds-gap-md); }
+.vg-pickers label { display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.vg-pre { font-family: var(--font-anthropic-sans); line-height: 1.55; white-space: pre-wrap; word-break: break-word; background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); margin: 0; max-height: 420px; overflow: auto; font-size: var(--cds-font-size-body); }
+.vg-diff ins { background: color-mix(in srgb, var(--color-ok) 22%, transparent); text-decoration: none; }
+.vg-diff del { background: color-mix(in srgb, var(--color-bad) 20%, transparent); }
+.vg-replies { display: grid; gap: var(--cds-gap-md); }
+.vg-reply { display: grid; gap: var(--cds-gap-sm); }
+.vg-reply-head { display: flex; gap: var(--cds-gap-sm); align-items: center; flex-wrap: wrap; }
+.vg-reply-head b { font-weight: var(--cds-font-weight-medium); }
+.vg-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--cds-gap-md); }
+.vg-two > div { min-width: 0; display: grid; gap: var(--cds-gap-xs); align-content: start; }
+.vg details summary { cursor: pointer; }
+.vg-foot { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.vg-foot dl { display: grid; gap: var(--cds-gap-sm); margin: var(--cds-gap-md) 0 0; }
+.vg-foot dt { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.vg-foot dd { margin: 0; max-width: 75ch; }
+[data-dash-source-state=refreshing] { opacity: .5; }
+</style>
+
+<div class="vg">
+  <header class="vg-head" id="overview">
+    <h1 class="vg-title">Van Gogh critic evals</h1>
+    <p class="vg-take" data-read lang="en">The latest run, <b data-draw="latest-label">—</b>, passed <b data-draw="latest-passed">—</b> of <b data-draw="latest-total">—</b> case runs: <span data-draw="latest-change-words">—</span>.</p>
+    <p class="vg-lede">Each case is answered by the critic in character, then a second model grades the reply against that case's requirements and the global rubric. Runs happen in the Claude session; this page is a copy of their results, updated after each run.</p>
+  </header>
+
+  <section class="vg-tiles" id="headline">
+    <div class="vg-card" id="tile-grade">
+      <p class="vg-label">Pass grade, latest run</p>
+      <div class="vg-big" data-draw="latest-grade">—</div>
+      <p class="vg-sub" data-draw="latest-interval">—</p>
+    </div>
+    <div class="vg-card" id="tile-change">
+      <p class="vg-label">Change on the run before</p>
+      <div class="vg-big" data-draw="latest-change">—</div>
+      <p class="vg-sub" data-draw="latest-change-note">—</p>
+    </div>
+    <div class="vg-card" id="tile-solid">
+      <p class="vg-label">Cases passing every run</p>
+      <div class="vg-big" data-draw="latest-solid">—</div>
+      <p class="vg-sub">A case counts only when all of its runs passed.</p>
+    </div>
+    <div class="vg-card" id="tile-cost">
+      <p class="vg-label">Cost of the latest run</p>
+      <div class="vg-big" data-draw="latest-cost">—</div>
+      <p class="vg-sub">Critic and grader calls together, at list prices.</p>
+    </div>
+  </section>
+
+  <section class="vg-sec" id="trend">
+    <h2>Pass rate by run</h2>
+    <p class="vg-note">Each dot is one run's pass rate; its whisker is the 95% interval. With only 3 to 5 runs per case, the same prompt can score about 10 points apart on two runs, so treat small moves as noise. A dashed line marks a changed test set or grader, after which runs aren't directly comparable.</p>
+    <div class="vg-card"><div class="vg-chart" data-draw="trend-chart" data-source="runs"></div></div>
+  </section>
+
+  <section class="vg-sec" id="runs">
+    <h2>All runs</h2>
+    <div class="vg-card vg-scroll">
+      <table class="vg-table" data-source="runs" data-row-key="run_id">
+        <thead>
+          <tr>
+            <th data-field="label">Run</th>
+            <th data-field="run_at">When</th>
+            <th class="num" data-field="pass_pct">Pass rate</th>
+            <th>Grade</th>
+            <th class="num" data-field="passed">Passed</th>
+            <th class="num" data-field="total">Of</th>
+            <th class="num" data-field="solid_cases">Cases solid</th>
+            <th class="num" data-field="dev_pass_pct">Dev</th>
+            <th class="num" data-field="holdout_pass_pct">Holdout</th>
+            <th class="num" data-field="cost_usd">Cost</th>
+            <th data-field="tests_version">Test set</th>
+            <th data-field="note">Note</th>
+          </tr>
+        </thead>
+        <tbody data-draw="runs-rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="vg-sec" id="compare">
+    <h2>Compare two runs</h2>
+    <p class="vg-note">A is the reference and B the candidate. Cases that got worse are listed first.</p>
+    <div class="vg-pickers">
+      <label>A, reference<select class="dash-select" data-draw="pick-a" aria-label="Run A" data-source="runs"></select></label>
+      <label>B, candidate<select class="dash-select" data-draw="pick-b" aria-label="Run B" data-source="runs"></select></label>
+    </div>
+    <div class="vg-tiles">
+      <div class="vg-card"><p class="vg-label">A pass rate</p><div class="vg-big" data-draw="cmp-a">—</div><p class="vg-sub" data-draw="cmp-a-sub">—</p></div>
+      <div class="vg-card"><p class="vg-label">B pass rate</p><div class="vg-big" data-draw="cmp-b">—</div><p class="vg-sub" data-draw="cmp-b-sub">—</p></div>
+      <div class="vg-card"><p class="vg-label">Change, A to B</p><div class="vg-big" data-draw="cmp-change">—</div><p class="vg-sub" data-draw="cmp-noise">—</p></div>
+    </div>
+    <div data-draw="cmp-warnings"></div>
+    <div class="vg-card vg-sec">
+      <h2>System prompt, A to B</h2>
+      <div data-draw="cmp-prompt">—</div>
+    </div>
+    <div class="vg-card vg-scroll">
+      <table class="vg-table" data-source="case_pass">
+        <thead><tr><th>Case</th><th class="num">A passed</th><th class="num">B passed</th><th>What changed</th></tr></thead>
+        <tbody data-draw="cmp-cases"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="vg-sec" id="replies">
+    <h2>Read the replies</h2>
+    <p class="vg-note">Every reply the critic wrote, with the grader's verdict and reason.</p>
+    <div class="vg-pickers">
+      <label>Run<select class="dash-select" data-draw="pick-run" aria-label="Run" data-source="runs"></select></label>
+      <label>Case<select class="dash-select" data-draw="pick-case" aria-label="Case" data-source="results"></select></label>
+    </div>
+    <div class="vg-card vg-two" data-draw="reply-case">—</div>
+    <div class="vg-replies" data-draw="reply-list" data-source="results"></div>
+  </section>
+
+  <details class="vg-foot" id="definitions">
+    <summary>What the numbers mean</summary>
+    <dl>
+      <dt>Pass rate</dt><dd>The share of case runs the grader passed. Each case runs several times, so 8 cases at 3 runs each give 24 case runs.</dd>
+      <dt>Grade</dt><dd>A band on the pass rate: Strong from 90%, Good from 70%, Weak from 40%, otherwise Failing.</dd>
+      <dt>95% interval</dt><dd>The range the true pass rate likely sits in, given how few runs there are (a Wilson interval). When two runs' intervals overlap, their difference could be chance.</dd>
+      <dt>Cases solid</dt><dd>Cases whose every run passed.</dd>
+      <dt>Dev and holdout</dt><dd>Dev cases are the ones the prompt is tuned against. Holdout cases are never used for tuning, so their pass rate shows whether a prompt change helps on artworks it wasn't tuned for. With only a few holdout cases, treat their rate as rough.</dd>
+      <dt>Test set</dt><dd>A short fingerprint of the test cases. It changes whenever a case is edited, added or removed, and runs on different test sets measure different things.</dd>
+      <dt>Skipped cases</dt><dd>The image and photograph cases need an image attached, so they don't run yet.</dd>
+    </dl>
+  </details>
+</div>
+
+<script>
+window.vg = (() => {
+  const BANDS = [
+    { min: 90, label: "Strong", tone: "ok" },
+    { min: 70, label: "Good", tone: "ok" },
+    { min: 40, label: "Weak", tone: "warn" },
+    { min: 0, label: "Failing", tone: "bad" },
+  ];
+  const rows = (id) => { const d = dash.data(id); return d.status === "ok" ? d.data : null; };
+  const calc = (id) => { const d = dash.data(id); return d.status === "ok" ? d.data : null; };
+  const make = (tag, attrs, ...kids) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) if (v != null) n.setAttribute(k, v);
+    for (const k of kids.flat()) if (k != null) n.append(k instanceof Node ? k : String(k));
+    return n;
+  };
+  const enc = (v) => String(v).replace(/%/g, "%25").replace(/&/g, "%26").replace(/=/g, "%3D");
+  const where = (col, v) => `${enc(col)}=${enc(v)}`;
+  const mark = (tag, source, field, w, text, cls) => make(tag, { "data-source": source, "data-field": field, "data-where": w, class: cls }, text);
+  const band = (p) => BANDS.find((b) => p >= b.min);
+  const chip = (p) => { const b = band(p); return make("span", { class: `vg-chip ${b.tone}` }, b.label); };
+  const when = d3.utcFormat("%b %-d, %Y, %H:%M UTC");
+  const date = (iso) => when(d3.isoParse(iso));
+  const money = (v) => (v == null ? "not recorded" : `$${v.toFixed(4)}`);
+  const signed = (n) => `${n > 0 ? "+" : ""}${n}`;
+  const dashOut = (el) => el.replaceChildren("—");
+  const sorted = (rs) => [...rs].sort((a, b) => d3.ascending(a.run_at, b.run_at));
+  const pick = (name, list, fallback) => {
+    const v = dash.params()[name];
+    return list.some((r) => r === v) ? v : fallback;
+  };
+  const wordDiff = (a, b) => {
+    const A = a.split(/(\s+)/), B = b.split(/(\s+)/);
+    if (A.length * B.length > 4e6) return null;
+    const n = A.length, m = B.length, dp = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    const out = []; let i = 0, j = 0;
+    while (i < n && j < m) {
+      if (A[i] === B[j]) { out.push(["=", A[i]]); i++; j++; }
+      else if (dp[i + 1][j] >= dp[i][j + 1]) out.push(["-", A[i++]]);
+      else out.push(["+", B[j++]]);
+    }
+    while (i < n) out.push(["-", A[i++]]);
+    while (j < m) out.push(["+", B[j++]]);
+    return out;
+  };
+  return { rows, calc, make, where, mark, band, chip, date, money, signed, dashOut, sorted, pick, wordDiff };
+})();
+</script>
+
+<script>
+dash.calc("case_pass", {
+  inputs: ["results"],
+  title: "Passes per case in each run",
+  description: "How many of each case's runs passed, for every eval run.",
+  fn: (results) => {
+    const out = new Map();
+    for (const r of results) {
+      const key = `${r.run_id}:${r.case_id}`;
+      if (!out.has(key)) out.set(key, { key, run_id: r.run_id, case_id: r.case_id, case_name: r.case_name, passed: 0, total: 0 });
+      const row = out.get(key);
+      row.passed += Number(r.passed);
+      row.total += 1;
+    }
+    return [...out.values()];
+  },
+});
+dash.calc("run_pairs", {
+  inputs: ["runs"],
+  title: "Change between two runs",
+  description: "Pass-rate change in percentage points from run A to run B, for every pair of runs.",
+  fn: (runs) => runs.flatMap((a) => runs.map((b) => ({ pair: `${a.run_id}>${b.run_id}`, a_run: a.run_id, b_run: b.run_id, change_pts: b.pass_pct - a.pass_pct }))),
+});
+dash.calc("latest_change", {
+  inputs: ["runs"],
+  title: "Change on the run before",
+  description: "Pass-rate change in percentage points from the second-latest run to the latest.",
+  fn: (runs) => {
+    const s = [...runs].sort((a, b) => (a.run_at < b.run_at ? -1 : 1));
+    return s.length < 2 ? null : s[s.length - 1].pass_pct - s[s.length - 2].pass_pct;
+  },
+});
+</script>
+
+<script>
+(() => {
+  const { rows, calc, make, where, mark, chip, money, signed, dashOut, sorted } = window.vg;
+  const latest = () => { const r = rows("runs"); return r && r.length ? sorted(r) : null; };
+
+  dash.draw("latest-label", (el) => {
+    const s = latest(); if (!s) return dashOut(el);
+    const r = s[s.length - 1];
+    el.replaceChildren(mark("span", "runs", "label", where("run_id", r.run_id), r.label));
+  });
+  dash.draw("latest-passed", (el) => {
+    const s = latest(); if (!s) return dashOut(el);
+    const r = s[s.length - 1];
+    el.replaceChildren(mark("span", "runs", "passed", where("run_id", r.run_id), r.passed));
+  });
+  dash.draw("latest-total", (el) => {
+    const s = latest(); if (!s) return dashOut(el);
+    const r = s[s.length - 1];
+    el.replaceChildren(mark("span", "runs", "total", where("run_id", r.run_id), r.total));
+  });
+  dash.draw("latest-change-words", (el) => {
+    const s = latest(); const c = dash.data("latest_change");
+    if (!s || c.status !== "ok") return dashOut(el);
+    if (s.length < 2) return el.replaceChildren("its first run");
+    const prev = s[s.length - 2].label;
+    const n = c.data;
+    const pts = n > 0 ? make("span", { "data-source": "latest_change" }, n) : make("span", null, Math.abs(n));
+    if (n > 0) el.replaceChildren("up ", pts, ` points on ${prev}`);
+    else if (n < 0) el.replaceChildren("down ", pts, ` points on ${prev}`);
+    else el.replaceChildren(`level with ${prev}`);
+  });
+  dash.draw("latest-grade", (el) => {
+    const s = latest(); if (!s) return dashOut(el);
+    const r = s[s.length - 1];
+    el.replaceChildren(mark("span", "runs", "pass_pct", where("run_id", r.run_id), `${r.pass_pct}%`), chip(r.pass_pct));
+  });
+  dash.draw("latest-interval", (el) => {
+    const s = latest(); if (!s) return dashOut(el);
+    const r = s[s.length - 1], w = where("run_id", r.run_id);
+    el.replaceChildren(mark("span", "runs", "passed", w, r.passed), " of ", mark("span", "runs", "total", w, r.total),
+      " passed · 95% interval ", mark("span", "runs", "ci_low_pct", w, r.ci_low_pct), "–", mark("span", "runs", "ci_high_pct", w, r.ci_high_pct), "%");
+  });
+  dash.draw("latest-change", (el) => {
+    const c = dash.data("latest_change");
+    if (c.status !== "ok" || c.data == null) return dashOut(el);
+    const n = c.data;
+    el.replaceChildren(make("span", { "data-source": "latest_change", class: n > 0 ? "vg-up" : n < 0 ? "vg-down" : null }, `${signed(n)} pts`));
+  });
+  dash.draw("latest-change-note", (el) => {
+    const s = latest(); if (!s || s.length < 2) return dashOut(el);
+    const a = s[s.length - 2], b = s[s.length - 1];
+    const overlap = a.ci_low_pct <= b.ci_high_pct && b.ci_low_pct <= a.ci_high_pct;
+    el.replaceChildren(`${b.label} against ${a.label}. `, overlap ? "Their intervals overlap, so this could be chance." : "Their intervals don't overlap, so this is likely a real change.");
+  });
+  dash.draw("latest-solid", (el) => {
+    const s = latest(); if (!s) return dashOut(el);
+    const r = s[s.length - 1], w = where("run_id", r.run_id);
+    el.replaceChildren(mark("span", "runs", "solid_cases", w, r.solid_cases), make("span", { class: "vg-sub" }, " of "), mark("span", "runs", "case_count", w, r.case_count));
+  });
+  dash.draw("latest-cost", (el) => {
+    const s = latest(); if (!s) return dashOut(el);
+    const r = s[s.length - 1];
+    el.replaceChildren(mark("span", "runs", "cost_usd", where("run_id", r.run_id), money(r.cost_usd)));
+  });
+
+  dash.draw("runs-rows", (el) => {
+    const s = latest();
+    if (!s) return el.replaceChildren();
+    el.replaceChildren(...[...s].reverse().map((r) => {
+      const tr = make("tr", { "data-key": r.run_id });
+      tr.append(
+        make("td", null, make("b", null, r.label)),
+        make("td", null, window.vg.date(r.run_at)),
+        make("td", { class: "num" }, `${r.pass_pct}%`),
+        make("td", null, chip(r.pass_pct)),
+        make("td", { class: "num" }, r.passed),
+        make("td", { class: "num" }, r.total),
+        make("td", { class: "num" }, r.solid_cases),
+        make("td", { class: "num" }, r.dev_pass_pct == null ? "—" : `${r.dev_pass_pct}%`),
+        make("td", { class: "num" }, r.holdout_pass_pct == null ? "—" : `${r.holdout_pass_pct}%`),
+        make("td", { class: "num" }, r.cost_usd == null ? "—" : money(r.cost_usd)),
+        make("td", { class: "vg-mono" }, r.tests_version),
+        make("td", { class: "wrap" }, r.note || "—"));
+      return tr;
+    }));
+  });
+})();
+</script>
+
+<script>
+dash.draw("trend-chart", {
+  mount: (el) => {
+    const tip = document.createElement("div");
+    tip.className = "vg-tip"; tip.hidden = true;
+    el.append(tip);
+    return { tip };
+  },
+  update: (el, made) => {
+    const { make, sorted, date } = window.vg;
+    const d = dash.data("runs");
+    el.querySelectorAll("svg, .vg-msg").forEach((n) => n.remove());
+    if (d.status === "error") { el.append(make("p", { class: "vg-note vg-msg" }, "Failed to load")); return; }
+    if (d.status !== "ok" || !d.data.length) return;
+    const runs = sorted(d.data);
+    const W = Math.max(300, el.clientWidth), H = 260;
+    const svg = d3.create("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("role", "img")
+      .attr("aria-label", `Pass rate for ${runs.length} runs, from ${runs[0].pass_pct}% to ${runs[runs.length - 1].pass_pct}%`);
+    el.prepend(svg.node());
+    const ticks = [0, 25, 50, 75, 100];
+    const probe = svg.append("g");
+    const widths = ticks.map((t) => probe.append("text").attr("class", "tick-label").text(`${t}%`).node().getComputedTextLength());
+    probe.remove();
+    const m = { l: Math.ceil(d3.max(widths) || 30) + 10, r: 18, t: 12, b: 34 };
+    const x = d3.scalePoint().domain(runs.map((r) => r.run_id)).range([m.l, W - m.r]).padding(runs.length === 1 ? 0.5 : 0.25);
+    const y = d3.scaleLinear().domain([0, 100]).range([H - m.b, m.t]);
+    const color = dash.colors[0];
+    svg.append("g").selectAll("line").data(ticks).join("line")
+      .attr("x1", m.l).attr("x2", W - m.r).attr("y1", y).attr("y2", y).style("stroke", "var(--cds-chart-grid)");
+    svg.append("g").selectAll("text").data(ticks).join("text").attr("class", "tick-label")
+      .attr("x", m.l - 8).attr("y", (t) => y(t) + 4).attr("text-anchor", "end").text((t) => `${t}%`);
+    runs.forEach((r, i) => {
+      if (i && (r.tests_version !== runs[i - 1].tests_version || r.grader_version !== runs[i - 1].grader_version)) {
+        const xm = (x(r.run_id) + x(runs[i - 1].run_id)) / 2;
+        svg.append("line").attr("x1", xm).attr("x2", xm).attr("y1", m.t).attr("y2", H - m.b)
+          .style("stroke", "var(--cds-chart-reference)").attr("stroke-dasharray", "3 3");
+      }
+    });
+    const labels = svg.append("g");
+    let lastRight = -Infinity;
+    runs.forEach((r) => {
+      const t = labels.append("text").attr("class", "tick-label").attr("x", x(r.run_id)).attr("y", H - 12).attr("text-anchor", "middle").text(r.label);
+      const w = t.node().getComputedTextLength(), left = x(r.run_id) - w / 2;
+      if (left < lastRight + 8 || left < 0 || x(r.run_id) + w / 2 > W) t.remove(); else lastRight = left + w;
+    });
+    svg.append("g").selectAll("line").data(runs).join("line")
+      .attr("x1", (r) => x(r.run_id)).attr("x2", (r) => x(r.run_id)).attr("y1", (r) => y(r.ci_low_pct)).attr("y2", (r) => y(r.ci_high_pct))
+      .style("stroke", color).style("stroke-opacity", 0.45).attr("stroke-width", 2).attr("stroke-linecap", "round");
+    if (runs.length > 1) svg.append("path").datum(runs)
+      .attr("d", d3.line().x((r) => x(r.run_id)).y((r) => y(r.pass_pct)))
+      .style("fill", "none").style("stroke", color).attr("stroke-width", 2);
+    svg.append("g").selectAll("circle").data(runs).join("circle")
+      .attr("cx", (r) => x(r.run_id)).attr("cy", (r) => y(r.pass_pct)).attr("r", 5)
+      .style("fill", color).style("stroke", "var(--color-panel)").attr("stroke-width", 2);
+    const cross = svg.append("line").attr("y1", m.t).attr("y2", H - m.b).style("stroke", "var(--cds-chart-reference)").attr("visibility", "hidden");
+    const step = runs.length > 1 ? x.step() : W - m.l - m.r;
+    const tip = made.tip;
+    svg.append("g").selectAll("rect").data(runs).join("rect")
+      .attr("x", (r) => x(r.run_id) - step / 2).attr("y", m.t).attr("width", step).attr("height", H - m.t - m.b)
+      .style("fill", "transparent")
+      .on("pointerenter", (event, r) => {
+        cross.attr("x1", x(r.run_id)).attr("x2", x(r.run_id)).attr("visibility", "visible");
+        tip.replaceChildren(make("div", null, make("b", null, r.label)), make("div", { class: "muted" }, date(r.run_at)),
+          make("div", null, `Pass rate ${r.pass_pct}% (${r.passed} of ${r.total})`),
+          make("div", { class: "muted" }, `95% interval ${r.ci_low_pct}–${r.ci_high_pct}%`),
+          make("div", { class: "muted" }, `Test set ${r.tests_version}`));
+        tip.hidden = false;
+        const scale = el.clientWidth / W;
+        const px = x(r.run_id) * scale;
+        tip.style.left = `${Math.max(0, Math.min(px - 95, el.clientWidth - 200))}px`;
+        tip.style.top = `${y(r.pass_pct) * scale + 14}px`;
+      })
+      .on("pointerleave", () => { tip.hidden = true; cross.attr("visibility", "hidden"); });
+  },
+});
+</script>
+
+<script>
+(() => {
+  const { rows, calc, make, where, mark, chip, signed, dashOut, sorted, pick, wordDiff } = window.vg;
+  const pair = () => {
+    const r = rows("runs"); if (!r || !r.length) return null;
+    const s = sorted(r), ids = s.map((x) => x.run_id);
+    const a = pick("a", ids, ids[Math.max(0, ids.length - 2)]);
+    const b = pick("b", ids, ids[ids.length - 1]);
+    return { A: s.find((x) => x.run_id === a), B: s.find((x) => x.run_id === b) };
+  };
+  const picker = (name, which) => dash.draw(name, (sel) => {
+    const r = rows("runs"), p = pair();
+    if (!r || !p) return sel.replaceChildren();
+    sel.replaceChildren(...[...sorted(r)].reverse().map((x) => new Option(`${x.label} · ${x.pass_pct}%`, x.run_id)));
+    sel.value = p[which].run_id;
+    sel.onchange = () => dash.setParams({ [which.toLowerCase()]: sel.value });
+  });
+  picker("pick-a", "A");
+  picker("pick-b", "B");
+
+  const side = (name, which) => {
+    dash.draw(name, (el) => {
+      const p = pair(); if (!p) return dashOut(el);
+      const r = p[which];
+      el.replaceChildren(mark("span", "runs", "pass_pct", where("run_id", r.run_id), `${r.pass_pct}%`), chip(r.pass_pct));
+    });
+    dash.draw(`${name}-sub`, (el) => {
+      const p = pair(); if (!p) return dashOut(el);
+      const r = p[which], w = where("run_id", r.run_id);
+      el.replaceChildren(`${r.label} · `, mark("span", "runs", "passed", w, r.passed), " of ", mark("span", "runs", "total", w, r.total),
+        " · interval ", mark("span", "runs", "ci_low_pct", w, r.ci_low_pct), "–", mark("span", "runs", "ci_high_pct", w, r.ci_high_pct), "%");
+    });
+  };
+  side("cmp-a", "A");
+  side("cmp-b", "B");
+
+  dash.draw("cmp-change", (el) => {
+    const p = pair(), pairs = calc("run_pairs");
+    if (!p || !pairs) return dashOut(el);
+    const key = `${p.A.run_id}>${p.B.run_id}`;
+    const row = pairs.find((x) => x.pair === key);
+    if (!row) return dashOut(el);
+    const n = row.change_pts;
+    el.replaceChildren(make("span", { "data-source": "run_pairs", "data-field": "change_pts", "data-where": where("pair", key), class: n > 0 ? "vg-up" : n < 0 ? "vg-down" : null }, `${signed(n)} pts`));
+  });
+  dash.draw("cmp-noise", (el) => {
+    const p = pair(); if (!p) return dashOut(el);
+    if (p.A.run_id === p.B.run_id) return el.replaceChildren("Pick two different runs.");
+    const overlap = p.A.ci_low_pct <= p.B.ci_high_pct && p.B.ci_low_pct <= p.A.ci_high_pct;
+    el.replaceChildren(overlap ? "The intervals overlap, so this could be chance. More runs per case would tell." : "The intervals don't overlap, so this is likely a real change.");
+  });
+  dash.draw("cmp-warnings", (el) => {
+    const p = pair(); if (!p) return el.replaceChildren();
+    const w = [];
+    if (p.A.tests_version !== p.B.tests_version) w.push("The test set changed between these runs, so they measure different things.");
+    if (p.A.grader_version !== p.B.grader_version) w.push("The grader changed between these runs, so scores aren't measured the same way.");
+    if (p.A.critic_model !== p.B.critic_model) w.push(`The critic model changed, from ${p.A.critic_model} to ${p.B.critic_model}.`);
+    el.replaceChildren(...w.map((t) => make("p", { class: "vg-card vg-note" }, "⚠ ", t)));
+  });
+  dash.draw("cmp-prompt", (el) => {
+    const p = pair(); if (!p) return dashOut(el);
+    const a = p.A.system_prompt, b = p.B.system_prompt;
+    if (a === b) {
+      el.replaceChildren(make("p", { class: "vg-note" }, "The same in both runs."), make("pre", { class: "vg-pre" }, a));
+      return;
+    }
+    const parts = wordDiff(a, b);
+    const pre = make("pre", { class: "vg-pre vg-diff" });
+    if (!parts) pre.append(b);
+    else for (const [op, t] of parts) pre.append(op === "=" ? t : make(op === "+" ? "ins" : "del", null, t));
+    el.replaceChildren(make("p", { class: "vg-note" }, "Added words are highlighted green, removed words red and struck through."), pre);
+  });
+  dash.draw("cmp-cases", (el) => {
+    const p = pair(), cp = calc("case_pass");
+    if (!p || !cp) return el.replaceChildren();
+    const ofRun = (id) => new Map(cp.filter((x) => x.run_id === id).map((x) => [x.case_id, x]));
+    const A = ofRun(p.A.run_id), B = ofRun(p.B.run_id);
+    const ids = [...new Set([...A.keys(), ...B.keys()])];
+    const items = ids.map((id) => {
+      const a = A.get(id), b = B.get(id);
+      const fa = a ? a.passed / a.total : null, fb = b ? b.passed / b.total : null;
+      let status, order;
+      if (!a) { status = "only in B"; order = 3; }
+      else if (!b) { status = "only in A"; order = 3; }
+      else if (fb < fa) { status = "worse"; order = 0; }
+      else if (fb > fa) { status = "better"; order = 1; }
+      else { status = "same"; order = 2; }
+      return { id, a, b, name: (b || a).case_name, status, order };
+    }).sort((x, y) => x.order - y.order || x.id - y.id);
+    const cell = (row) => row
+      ? make("td", { class: "num" }, mark("span", "case_pass", "passed", where("key", row.key), row.passed), ` of ${row.total}`)
+      : make("td", { class: "num" }, "—");
+    el.replaceChildren(...items.map((it) => make("tr", null,
+      make("td", null, `#${it.id} ${it.name}`), cell(it.a), cell(it.b),
+      make("td", null, it.status === "worse" ? make("span", { class: "vg-chip bad" }, "worse")
+        : it.status === "better" ? make("span", { class: "vg-chip ok" }, "better") : it.status))));
+  });
+})();
+</script>
+
+<script>
+(() => {
+  const { rows, make, where, mark, dashOut, sorted, pick } = window.vg;
+  const selection = () => {
+    const r = rows("runs"), res = rows("results");
+    if (!r || !res || !r.length) return null;
+    const s = sorted(r), runIds = s.map((x) => x.run_id);
+    const run = pick("run", runIds, runIds[runIds.length - 1]);
+    const inRun = res.filter((x) => x.run_id === run);
+    const caseIds = [...new Set(inRun.map((x) => x.case_id))].sort((a, b) => a - b);
+    const v = Number(dash.params().case);
+    const kase = caseIds.includes(v) ? v : caseIds[0];
+    return { s, run, inRun, caseIds, kase, picked: inRun.filter((x) => x.case_id === kase).sort((a, b) => a.run - b.run) };
+  };
+  dash.draw("pick-run", (sel) => {
+    const x = selection(); if (!x) return sel.replaceChildren();
+    sel.replaceChildren(...[...x.s].reverse().map((r) => new Option(r.label, r.run_id)));
+    sel.value = x.run;
+    sel.onchange = () => dash.setParams({ run: sel.value });
+  });
+  dash.draw("pick-case", (sel) => {
+    const x = selection(); if (!x) return sel.replaceChildren();
+    sel.replaceChildren(...x.caseIds.map((id) => {
+      const rs = x.inRun.filter((r) => r.case_id === id);
+      return new Option(`#${id} ${rs[0].case_name} · ${rs.filter((r) => r.verdict === "PASS").length} of ${rs.length} passed`, String(id));
+    }));
+    sel.value = String(x.kase);
+    sel.onchange = () => dash.setParams({ case: Number(sel.value) });
+  });
+  dash.draw("reply-case", (el) => {
+    const x = selection(); if (!x || !x.picked.length) return dashOut(el);
+    const c = x.picked[0];
+    el.replaceChildren(
+      make("div", null, make("p", { class: "vg-label" }, "What the user asked"), make("pre", { class: "vg-pre" }, c.input)),
+      make("div", null, make("p", { class: "vg-label" }, "What the grader checks for this case"), make("pre", { class: "vg-pre" }, c.must_contain)));
+  });
+  dash.draw("reply-list", (el) => {
+    const x = selection(); if (!x) return el.replaceChildren();
+    el.replaceChildren(...x.picked.map((r) => {
+      const w = where("result_id", r.result_id);
+      const pass = r.verdict === "PASS";
+      const human = r.human_verdict ? make("span", { class: "vg-chip" }, `Your review: ${r.human_verdict}`) : null;
+      return make("div", { class: "vg-card vg-reply", id: `reply-${r.run}` },
+        make("div", { class: "vg-reply-head" }, make("b", null, `Run ${r.run}`),
+          make("span", { class: `vg-chip ${pass ? "ok" : r.verdict === "ERROR" ? "warn" : "bad"}` }, mark("span", "results", "verdict", w, r.verdict)), human),
+        make("p", { class: "vg-note" }, "Grader: ", mark("span", "results", "reason", w, r.reason)),
+        make("details", null, make("summary", null, "The critic's reply"), make("pre", { class: "vg-pre" }, r.output || "(empty)")));
+    }));
+  });
+})();
+</script>

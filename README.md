@@ -48,6 +48,7 @@ python eval.py --runs 3 --label try-structure --prompt-file prompt.txt --note "A
 | `results/<run>.jsonl` | Every input, output, verdict, reason and token count of one run |
 | `results/<run>.manifest.json` | The frozen record of what produced the run (see below) |
 | `results/<run>.reviews.json` | Your Pass/Fail verdicts on that run's grader calls |
+| `dashboard/` | The hosted claude.ai dashboard: its page, the export script and a local preview ([details](dashboard/README.md)) |
 
 ## Importing test cases
 

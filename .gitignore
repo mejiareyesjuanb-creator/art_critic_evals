@@ -1,1 +1,3 @@
 __pycache__/
+dashboard/build/
+dashboard/node_modules/

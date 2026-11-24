@@ -1,0 +1,12 @@
+{
+  "name": "van-gogh-critic-dashboard-preview",
+  "private": true,
+  "description": "Local preview of the hosted eval dashboard page",
+  "scripts": {
+    "preview": "node preview.js"
+  },
+  "devDependencies": {
+    "d3": "7.9.0",
+    "playwright": "1.63.0"
+  }
+}
